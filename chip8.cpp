@@ -76,12 +76,14 @@ void chip8::emulateCycle()
 						gfx[i] = 0;
 					isDraw = true;
 					PC += 2;
+					//printf("Call\n");
 					break;
 
 				case 0x000E:
 					sp--;
 					PC = stack[sp];
 					PC += 2;
+					printf("Clear Screen\n");
 					break;
 
 				default:
@@ -89,10 +91,18 @@ void chip8::emulateCycle()
 			}
 			break;
 
+		case 0x1000:
+			PC = opcode & 0x0FFF;
+			printf("Jump to " + PC);
+			printf("\n");
+			break;
+
 		case 0x2000:
 			stack[sp] = PC;
 			sp++;
 			PC = opcode & 0xFFF;
+			printf("Call to " + PC);
+			printf("\n");
 			break;
 
 		case 0x3000:
@@ -100,6 +110,8 @@ void chip8::emulateCycle()
 				PC += 4; // skip next instruction
 			else
 				PC += 2; // goto next instruction
+
+			printf("Skip if VX == NN\n");
 			break;
 
 		case 0x4000:
@@ -107,6 +119,8 @@ void chip8::emulateCycle()
 				PC += 4; // skip next instruction
 			else
 				PC += 2; // goto next instruction
+
+			printf("Skip if VX != NN\n");
 			break;
 
 		case 0x5000:
@@ -116,16 +130,22 @@ void chip8::emulateCycle()
 				PC += 4;
 			else
 				PC += 2;
+
+			printf("Skip is VX == VY\n");
 			break;
 
 		case 0x6000:
 			reg[(opcode & 0xF00 >> 8)] = opcode & 0x00FF;
 			PC += 2;
+
+			printf("VX == NN\n");
 			break;
 
 		case 0x7000:
 			reg[(opcode & 0xF00 >> 8)] += opcode & 0x00FF;
 			PC += 2;
+
+			printf("VX += NN\n");
 			break;
 
 		case 0x8000:
@@ -134,21 +154,28 @@ void chip8::emulateCycle()
 				case 0x0000:
 					reg[(opcode & 0xF00 >> 8)] = reg[(opcode & 0xF0) >> 4];
 					PC += 2;
+
+					printf("VX == VY\n");
 					break;
 
 				case 0x0001:
 					reg[(opcode & 0xF00 >> 8)] |= reg[(opcode & 0xF0) >> 4];
 					PC += 2;
+
+					printf("VX = VX | VY\n");
 					break;
 
 				case 0x0002:
 					reg[(opcode & 0xF00 >> 8)] &= reg[(opcode & 0xF0) >> 4];
 					PC += 2;
+
+					printf("VX = VX & VY\n");
 					break;
 
 				case 0x0003:
 					reg[(opcode & 0xF00 >> 8)] ^= reg[(opcode & 0xF0) >> 4];
 					PC += 2;
+					printf("VX = VX ^ VY\n");
 					break;
 
 				// these next cases change the carry value (register 16)
@@ -278,6 +305,7 @@ void chip8::emulateCycle()
 
 				case 0x000A:
 				{
+					printf("waiting for button press...");
 					// so in this case a key press is awaited.
 					// loop until one of the key entries is pressed
 					bool pressed = false;
@@ -347,7 +375,6 @@ void chip8::emulateCycle()
 		default:
 			printf("Unknown opcode 0x%X\n", opcode);
 	}
-
 
 	if (DelayTimer > 0)
 		--DelayTimer;
